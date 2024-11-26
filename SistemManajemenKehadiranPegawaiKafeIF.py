@@ -161,3 +161,66 @@ def __init__(self):
         
         tk.Button(self, text="Submit", command=submit_pegawai).pack(pady=10)
         tk.Button(self, text="Back", command=self.show_pemilik_menu).pack(pady=10)
+        
+    def laporan_kehadiran(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+        self.geometry("300x275")
+
+        tk.Label(self, text="Laporan Absensi", font=("Arial", 14)).pack(pady=(20, 0))   
+
+        tk.Label(self, text="Masukkan tanggal mulai (YYYY-MM-DD):").pack(pady=(10))
+        start_date_entry = tk.Entry(self)
+        start_date_entry.pack()
+
+        tk.Label(self, text="Masukkan tanggal akhir (YYYY-MM-DD):").pack(pady=(10))
+        end_date_entry = tk.Entry(self)
+        end_date_entry.pack()
+
+        def submit_laporan_kehadiran():
+            start_date = start_date_entry.get()
+            end_date = end_date_entry.get()
+
+            try:
+                conn = pyodbc.connect(connectionString)
+                cursor = conn.cursor()
+                
+                query = """
+                SELECT 
+                    p.nama AS Nama_Pegawai,
+                    CONVERT(VARCHAR, a.tanggalAbsensi, 23) AS Tanggal,
+                    CONVERT(VARCHAR, a.waktuMasuk, 8) AS Waktu_Masuk,
+                    CONVERT(VARCHAR, a.waktuKeluar, 8) AS Waktu_Keluar,
+                    DATEDIFF(HOUR, a.waktuMasuk, a.waktuKeluar) AS TotalJamKerja
+                FROM 
+                    pegawai p
+                JOIN 
+                    Absensi a ON p.idPegawai = a.idPegawai
+                WHERE
+                    a.tanggalAbsensi BETWEEN ? AND ?
+                ORDER BY
+                    p.nama, a.tanggalAbsensi
+                """
+                cursor.execute(query, (start_date, end_date))
+                columns = [column[0] for column in cursor.description]
+                results = cursor.fetchall()
+                
+                result_window = tk.Toplevel(self)
+                result_window.title("Laporan Kehadiran")
+                
+                tree = ttk.Treeview(result_window, columns=columns, show='headings')
+                for col in columns:
+                    tree.heading(col, text=col)
+                    tree.column(col, minwidth=0, width=120)
+                tree.pack(fill=tk.BOTH, expand=True)
+                
+                for row in results:
+                    tree.insert('', tk.END, values=row)
+                
+                conn.close()
+            except Exception as e:
+                messagebox.showerror("Error", str(e))
+        
+        tk.Button(self, text="Submit", command=submit_laporan_kehadiran).pack(pady=10)
+        tk.Button(self, text="Back", command=self.show_pemilik_menu).pack(pady=10) 
+
