@@ -286,3 +286,4 @@ def __init__(self):
         
         tk.Button(self, text="Submit", command=submit_laporan_gaji).pack(pady=10)
         tk.Button(self, text="Back", command=self.show_pemilik_menu).pack(pady=10)
+        tk.Button(self, text="Back", command=self.create_main_menu, width=20).pack(pady=10)
