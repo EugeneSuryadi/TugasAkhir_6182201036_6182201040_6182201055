@@ -8,8 +8,8 @@ from tkinter import Canvas, Frame, Scrollbar
 # Database connection string
 connectionString = (
     'DRIVER={ODBC Driver 17 for SQL Server};'
-    'SERVER=HP-ENVY\\SQLEXPRESS;'
-    'DATABASE=KafeIF2;'
+    'SERVER=LAPTOP-CGSVR75B\\SQLEXPRESS;'
+    'DATABASE=DatabaseManpro;'  # Ganti dengan nama database yang benar
     'Trusted_Connection=yes;'
     'TrustServerCertificate=yes;'
 )
@@ -228,46 +228,51 @@ class AbsensiApp(tk.Tk):
     def create_main_menu(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("600x500")
-        
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
-        frame = scroll_frame.scrollable_frame
-        
-        tk.Label(frame, text="Sistem Manajemen", font=("Arial", 18)).pack(pady=(20, 10))
-        tk.Label(frame, text="Kehadiran Pegawai Kafe IF", font=("Arial", 18)).pack(pady=(0, 20))
 
-        tk.Button(frame, text="Pemilik", command=self.show_pemilik_login, width=25, height=2).pack(pady=10)
-        tk.Button(frame, text="Pegawai", command=self.show_pegawai_login, width=25, height=2).pack(pady=10)
+        # Menentukan ukuran jendela tetap
+        self.geometry("430x250")
+        self.update_idletasks()  # Pastikan ukuran dihitung sebelum penempatan widget
 
-        tk.Label(frame, text="Eugene Suryadi - 6182201036", font=("Arial", 10)).pack(pady=4)
-        tk.Label(frame, text="Timothy Jason Tchandra - 6182201040", font=("Arial", 10)).pack(pady=3)
-        tk.Label(frame, text="Albert Christian Lifen - 6182201055", font=("Arial", 10)).pack(pady=1)
+        # Membuat frame utama
+        frame = tk.Frame(self, width=430, height=250)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        # Menambahkan Label dan tombol di tengah-tengah
+        tk.Label(frame, text="Sistem Manajemen", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=50, anchor="center")
+        tk.Label(frame, text="Kehadiran Pegawai Kafe Asep Cikidiw", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=90, anchor="center")
+
+        # Tombol di tengah
+        tk.Button(frame, text="Pemilik", command=self.show_pemilik_login, background="black", fg="white", width=20).place(relx=0.5, y=140, anchor="center")
+        tk.Button(frame, text="Pegawai", command=self.show_pegawai_login, background="black", fg="white", width=20).place(relx=0.5, y=180, anchor="center")
 
     def show_pemilik_login(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("600x500")
-        
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
-        frame = scroll_frame.scrollable_frame
 
-        tk.Label(frame, text="Login to Continue", font=("Arial", 18)).pack(pady=(20, 20))
+        # Ukuran jendela 430x400
+        self.geometry("400x420")
 
-        tk.Label(frame, text="Username:", font=("Arial", 12)).pack(pady=(10, 0))
+        # Membuat frame utama
+        frame = tk.Frame(self, width=430, height=400)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        # Menambahkan Label untuk judul dan menempatkannya di tengah
+        tk.Label(frame, text="Login to Continue", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=50, anchor="center")
+
+        # Label dan Entry untuk Username
+        tk.Label(frame, text="Username:", font=("Helvetica", 12)).place(relx=0.5, y=100, anchor="center")
         username_entry = tk.Entry(frame, width=30)
-        username_entry.pack()
+        username_entry.place(relx=0.5, y=130, anchor="center")
 
-        tk.Label(frame, text="Email:", font=("Arial", 12)).pack(pady=(10, 0))
+        # Label dan Entry untuk Email
+        tk.Label(frame, text="Email:", font=("Helvetica", 12)).place(relx=0.5, y=160, anchor="center")
         email_entry = tk.Entry(frame, width=30)
-        email_entry.pack()
+        email_entry.place(relx=0.5, y=190, anchor="center")
 
-        tk.Label(frame, text="Password:", font=("Arial", 12)).pack(pady=(10, 0))
+        # Label dan Entry untuk Password
+        tk.Label(frame, text="Password:", font=("Helvetica", 12)).place(relx=0.5, y=220, anchor="center")
         password_entry = tk.Entry(frame, show='*', width=30)
-        password_entry.pack()
+        password_entry.place(relx=0.5, y=250, anchor="center")
 
         def submit_login():
             username = username_entry.get()
@@ -275,9 +280,9 @@ class AbsensiApp(tk.Tk):
             password = password_entry.get()
 
             try:
-                conn = pyodbc.connect(connectionString)
+                conn = pyodbc.connect(connectionString)  # Ganti `connectionString` dengan string koneksi Anda
                 cursor = conn.cursor()
-                
+
                 cursor.execute("SELECT * FROM Pemilik WHERE username=? AND email=? AND password=?", (username, email, password))
                 row = cursor.fetchone()
                 if row:
@@ -292,30 +297,44 @@ class AbsensiApp(tk.Tk):
                 conn.close()
             except Exception as e:
                 messagebox.showerror("Error", str(e))
-        
-        tk.Button(frame, text="Login", command=submit_login, width=20, height=2).pack(pady=10)
-        tk.Button(frame, text="Back", command=self.create_main_menu, width=20, height=2).pack(pady=10)
+
+        # Tombol Login dan Back diatur di tengah
+        tk.Button(frame, text="Login", command=submit_login, width=15, height=1, background="blue", fg="white").place(relx=0.5, y=310, anchor="center")
+        tk.Button(frame, text="Back", command=self.create_main_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=380, anchor="center")
+
+
 
     def show_pemilik_menu(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("600x500")
         
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
+        # Ukuran jendela tetap
+        self.geometry("350x390")
         
-        frame = scroll_frame.scrollable_frame
+        # Membuat frame utama
+        frame = tk.Frame(self, width=400, height=420)
+        frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(frame, text="Select to Continue", font=("Arial", 18)).pack(pady=(20, 20))
-        tk.Button(frame, text="Registrasi Pegawai Baru", command=self.pegawai_baru, width=25, height=2).pack(pady=10)
-        tk.Button(frame, text="Laporan Absensi", command=self.laporan_kehadiran, width=25, height=2).pack(pady=10)
-        tk.Button(frame, text="Laporan Gaji", command=self.laporan_gaji, width=25, height=2).pack(pady=10)
-        tk.Button(frame, text="Back", command=self.create_main_menu, width=25, height=2).pack(pady=10)
+        # Menambahkan Label di tengah
+        tk.Label(frame, text="Hello, Owner!", font=("Helvetica", 12), fg="blue").place(relx=0.5, y=35, anchor="center")
+        tk.Label(frame, text="Select to Continue", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=60, anchor="center")
+
+        # Tombol Registrasi Pegawai Baru di tengah
+        tk.Button(frame, text="Registrasi Pegawai Baru", command=self.pegawai_baru, width=25, height=2, background="black", fg="white").place(relx=0.5, y=120, anchor="center")
+        
+        # Tombol Laporan Absensi di tengah
+        tk.Button(frame, text="Laporan Absensi", command=self.laporan_kehadiran, width=25, height=2, background="black", fg="white").place(relx=0.5, y=190, anchor="center")
+        
+        # Tombol Laporan Gaji di tengah
+        tk.Button(frame, text="Laporan Gaji", command=self.laporan_gaji, width=25, height=2, background="black", fg="white").place(relx=0.5, y=260, anchor="center")
+        
+        # Tombol Back di tengah
+        tk.Button(frame, text="Back", command=self.create_main_menu, width=20, height=1, background="red", fg="white").place(relx=0.5, y=330, anchor="center")
 
     def show_pegawai_login(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("600x500")
+        self.geometry("430x250")
         
         scroll_frame = ScrollableFrame(self)
         scroll_frame.pack(fill=tk.BOTH, expand=True)
@@ -328,13 +347,33 @@ class AbsensiApp(tk.Tk):
         nomor_telepon_entry = tk.Entry(frame, width=30)
         nomor_telepon_entry.pack()
 
+    def show_pegawai_login(self):
+        for widget in self.winfo_children():
+            widget.destroy()
+        
+        # Ukuran jendela tetap
+        self.geometry("430x300")
+        
+        # Membuat frame utama
+        frame = tk.Frame(self, width=430, height=250)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        # Menambahkan Label di tengah
+        tk.Label(frame, text="Login Pegawai", font=("Arial", 18), fg="blue").place(relx=0.5, y=30, anchor="center")
+
+        # Input untuk Nomor Telepon
+        tk.Label(frame, text="Nomor Telepon:", font=("Arial", 12)).place(relx=0.5, y=80, anchor="center")
+        nomor_telepon_entry = tk.Entry(frame, width=30)
+        nomor_telepon_entry.place(relx=0.5, y=110, anchor="center")
+
+        # Fungsi untuk submit login
         def submit_login():
             nomor_telepon = nomor_telepon_entry.get()
 
             try:
                 conn = pyodbc.connect(connectionString)
                 cursor = conn.cursor()
-                
+
                 cursor.execute("SELECT idPegawai FROM Pegawai WHERE NomorTelepon=?", (nomor_telepon,))
                 row = cursor.fetchone()
                 if row:
@@ -346,64 +385,70 @@ class AbsensiApp(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-        tk.Button(frame, text="Login", command=submit_login, width=20, height=2).pack(pady=10)
-        tk.Button(frame, text="Back", command=self.create_main_menu, width=20, height=2).pack(pady=10)
+        # Tombol Login di tengah
+        tk.Button(frame, text="Login", command=submit_login, width=15, height=1, background="blue", fg="white").place(relx=0.5, y=160, anchor="center")
+        
+        # Tombol Back di tengah
+        tk.Button(frame, text="Back", command=self.create_main_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=220, anchor="center")
+
 
     def show_pegawai_menu(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("600x500")
+        self.geometry("350x390")
         
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
-        frame = scroll_frame.scrollable_frame
+        # Membuat frame utama
+        frame = tk.Frame(self, width=400, height=420)
+        frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(frame, text="Select to Continue", font=("Arial", 18)).pack(pady=(20, 20))
-        tk.Button(frame, text="Absensi", command=self.absensi, width=25, height=2).pack(pady=10)
-        tk.Button(frame, text="Gaji", command=self.gaji, width=25, height=2).pack(pady=10)
-        tk.Button(frame, text="Back", command=self.create_main_menu, width=25, height=2).pack(pady=10)
+        tk.Label(frame, text="Select to Continue", font=("Arial", 18)).place(relx=0.5, y=40, anchor="center")
+
+        tk.Button(frame, text="Absensi", command=self.absensi, width=15, height=2, background="black", fg="white").place(relx=0.5, y=120, anchor="center")
+        tk.Button(frame, text="Gaji", command=self.gaji, width=15, height=2, background="black", fg="white").place(relx=0.5, y=180, anchor="center")
+        tk.Button(frame, text="Back", command=self.create_main_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=240, anchor="center")
 
     def pegawai_baru(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("800x700")  # Increased window size for better scrollability
         
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
-        frame = scroll_frame.scrollable_frame
+        # Ukuran jendela tetap
+        self.geometry("450x630")
 
-        tk.Label(frame, text="Registrasi Pegawai Baru", font=("Arial", 18)).pack(pady=(20, 20))
-        
-        # Input fields
-        tk.Label(frame, text="Nama:", font=("Arial", 12)).pack(pady=(10, 0))
+        # Membuat frame utama
+        frame = tk.Frame(self, width=400, height=600)
+        frame.pack(fill=tk.BOTH, expand=True)
+
+        # Menambahkan Label di tengah
+        tk.Label(frame, text="Registrasi Pegawai Baru", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=20, anchor="center")
+
+        # Input fields di tengah
+        tk.Label(frame, text="Nama:", font=("Helvetica", 12)).place(relx=0.5, y=60, anchor="center")
         nama_entry = tk.Entry(frame, width=40)
-        nama_entry.pack()
+        nama_entry.place(relx=0.5, y=80, anchor="center")
 
-        tk.Label(frame, text="Nomor Telepon:", font=("Arial", 12)).pack(pady=(10, 0))
+        tk.Label(frame, text="Nomor Telepon:", font=("Helvetica", 12)).place(relx=0.5, y=120, anchor="center")
         nomor_telepon_entry = tk.Entry(frame, width=40)
-        nomor_telepon_entry.pack()
+        nomor_telepon_entry.place(relx=0.5, y=140, anchor="center")
 
-        tk.Label(frame, text="Email:", font=("Arial", 12)).pack(pady=(10, 0))
+        tk.Label(frame, text="Email:", font=("Helvetica", 12)).place(relx=0.5, y=180, anchor="center")
         email_entry = tk.Entry(frame, width=40)
-        email_entry.pack()
+        email_entry.place(relx=0.5, y=200, anchor="center")
 
-        tk.Label(frame, text="Alamat:", font=("Arial", 12)).pack(pady=(10, 0))
+        tk.Label(frame, text="Alamat:", font=("Helvetica", 12)).place(relx=0.5, y=250, anchor="center")
         alamat_entry = tk.Entry(frame, width=40)
-        alamat_entry.pack()
+        alamat_entry.place(relx=0.5, y=270, anchor="center")
 
         # Kecamatan Dropdown
-        tk.Label(frame, text="Kecamatan:", font=("Arial", 12)).pack(pady=(10, 0))
+        tk.Label(frame, text="Kecamatan:", font=("Helvetica", 12)).place(relx=0.5, y=320, anchor="center")
         kecamatan_var = tk.StringVar()
         kecamatan_dropdown = ttk.Combobox(frame, textvariable=kecamatan_var, values=list(kecamatan_dict.keys()), width=37)
-        kecamatan_dropdown.pack()
+        kecamatan_dropdown.place(relx=0.5, y=340, anchor="center")
 
         # Kelurahan Dropdown
-        tk.Label(frame, text="Kelurahan:", font=("Arial", 12)).pack(pady=(10, 0))
+        tk.Label(frame, text="Kelurahan:", font=("Helvetica", 12)).place(relx=0.5, y=390, anchor="center")
         kelurahan_var = tk.StringVar()
         kelurahan_dropdown = ttk.Combobox(frame, textvariable=kelurahan_var, values=[], width=37)
-        kelurahan_dropdown.pack()
+        kelurahan_dropdown.place(relx=0.5, y=410, anchor="center")
 
         # Update kelurahan based on kecamatan selection
         def update_kelurahan(*args):
@@ -416,12 +461,14 @@ class AbsensiApp(tk.Tk):
         
         kecamatan_var.trace('w', update_kelurahan)
 
+
         # Jabatan Dropdown
-        tk.Label(frame, text="Nama Jabatan:", font=("Arial", 12)).pack(pady=(10, 0))
+        tk.Label(frame, text="Nama Jabatan:", font=("Helvetica", 12)).place(relx=0.5, y=460, anchor="center")
         jabatan_var = tk.StringVar()
         jabatan_dropdown = ttk.Combobox(frame, textvariable=jabatan_var, values=list(jabatan_dict.keys()), width=37)
-        jabatan_dropdown.pack()
+        jabatan_dropdown.place(relx=0.5, y=480, anchor="center")
 
+        # Tombol Submit dan Back
         def submit_pegawai():
             nama = nama_entry.get().strip()
             nomor_telepon = nomor_telepon_entry.get().strip()
@@ -430,7 +477,7 @@ class AbsensiApp(tk.Tk):
             kecamatan = kecamatan_var.get().strip()
             kelurahan = kelurahan_var.get().strip()
             nama_jabatan = jabatan_var.get().strip()
-            
+
             if not all([nama, nomor_telepon, email, alamat, kecamatan, kelurahan, nama_jabatan]):
                 messagebox.showerror("Error", "Semua field harus diisi.")
                 return
@@ -438,7 +485,7 @@ class AbsensiApp(tk.Tk):
             try:
                 conn = pyodbc.connect(connectionString)
                 cursor = conn.cursor()
-                
+
                 cursor.execute("SELECT COUNT(*) FROM Pegawai WHERE NomorTelepon = ?", (nomor_telepon,))
                 if cursor.fetchone()[0] > 0:
                     messagebox.showerror("Error", "Nomor Telepon sudah terdaftar.")
@@ -472,30 +519,32 @@ class AbsensiApp(tk.Tk):
                 self.show_pemilik_menu()
             except Exception as e:
                 messagebox.showerror("Error", str(e))
-        
-        tk.Button(frame, text="Submit", command=submit_pegawai, width=20, height=2).pack(pady=20)
-        tk.Button(frame, text="Back", command=self.show_pemilik_menu, width=20, height=2).pack(pady=10)
+
+        tk.Button(frame, text="Submit", command=submit_pegawai, width=15, height=2, background="blue", fg="white").place(relx=0.5, y=540, anchor="center")
+        tk.Button(frame, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=580, anchor="center")
 
     def absensi(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("600x500")
+        self.geometry("500x400")
         
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
-        frame = scroll_frame.scrollable_frame
+        # Membuat frame utama
+        frame = tk.Frame(self, width=430, height=250)
+        frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(frame, text="Absensi", font=("Arial", 18)).pack(pady=(20, 20)) 
+        # Label di tengah
+        tk.Label(frame, text="Absensi", font=("Arial", 18)).place(relx=0.5, y=40, anchor="center")
 
-        tk.Label(frame, text="Apakah ini waktu masuk atau keluar? (masuk/keluar):", font=("Arial", 12)).pack(pady=(10, 0))
+        # Label dan dropdown di tengah
+        tk.Label(frame, text="Apakah ini waktu masuk atau keluar? (masuk/keluar):", font=("Arial", 12)).place(relx=0.5, y=100, anchor="center")
         action_var = tk.StringVar()
         action_dropdown = ttk.Combobox(frame, textvariable=action_var, values=["masuk", "keluar"], width=20)
-        action_dropdown.pack()
+        action_dropdown.place(relx=0.5, y=130, anchor="center")
 
-        tk.Label(frame, text="Masukkan nomor telepon untuk check-in/check-out:", font=("Arial", 12)).pack(pady=(10, 0))
+        # Label dan entry nomor telepon di tengah
+        tk.Label(frame, text="Masukkan nomor telepon untuk check-in/check-out:", font=("Arial", 12)).place(relx=0.5, y=170, anchor="center")
         nomor_telepon_entry = tk.Entry(frame, width=30)
-        nomor_telepon_entry.pack()
+        nomor_telepon_entry.place(relx=0.5, y=200, anchor="center")
 
         def submit_absensi():
             action = action_var.get().strip().lower()
@@ -562,31 +611,34 @@ class AbsensiApp(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-        tk.Button(frame, text="Submit", command=submit_absensi, width=20, height=2).pack(pady=20)
-        tk.Button(frame, text="Back", command=self.show_pegawai_menu, width=20, height=2).pack(pady=10)
+        # Tombol Submit dan Back di tengah
+        tk.Button(frame, text="Submit", command=submit_absensi, width=15, height=2, background="black", fg="white").place(relx=0.5, y=270, anchor="center")
+        tk.Button(frame, text="Back", command=self.show_pegawai_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=320, anchor="center")
+
 
     def gaji(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("600x500")
+        self.geometry("500x400")
         
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
-        frame = scroll_frame.scrollable_frame
+        frame = tk.Frame(self, width=430, height=250)
+        frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(frame, text="Gaji Mingguan", font=("Arial", 18)).pack(pady=(20, 20))
+
+        # Label di tengah
+        tk.Label(frame, text="Gaji Mingguan", font=("Arial", 18)).place(relx=0.5, y=40, anchor="center")
 
         try:
             weekly_hours, weekly_gaji = fetch_weekly_hours_and_gaji(self.id_pegawai)
-            tk.Label(frame, text=f"Total Jam Kerja: {weekly_hours} jam", font=("Arial", 12)).pack(pady=(10, 10))
-            tk.Label(frame, text=f"Total Gaji: Rp {weekly_gaji}", font=("Arial", 12)).pack(pady=(0, 20))
+            tk.Label(frame, text=f"Total Jam Kerja: {weekly_hours} jam", font=("Arial", 12)).place(relx=0.5, y=120, anchor="center")
+            tk.Label(frame, text=f"Total Gaji: Rp {weekly_gaji}", font=("Arial", 12)).place(relx=0.5, y=160, anchor="center")
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
-        # Add 'Details' button
-        tk.Button(frame, text="Details", command=self.gaji_details, width=20, height=2).pack(pady=10)
-        tk.Button(frame, text="Back", command=self.show_pegawai_menu, width=20, height=2).pack(pady=10)
+        # Tombol Details dan Back di tengah
+        tk.Button(frame, text="Details", command=self.gaji_details, width=20, height=2,background="black", fg="white").place(relx=0.5, y=220, anchor="center")
+        tk.Button(frame, text="Back", command=self.show_pegawai_menu, width=10, height=1,background="red", fg="white").place(relx=0.5, y=280, anchor="center")
+
 
     def gaji_details(self):
         # Create a new window for details
@@ -667,30 +719,58 @@ class AbsensiApp(tk.Tk):
     def laporan_gaji(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("800x700")
+        self.geometry("600x500")
         
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
-        frame = scroll_frame.scrollable_frame
+        # Membuat frame utama yang diatur untuk posisi tengah
+        frame = tk.Frame(self, width=800, height=700)
+        frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(frame, text="Laporan Gaji", font=("Arial", 18)).pack(pady=(20, 20))
+        # Menambahkan Label di tengah
+        tk.Label(frame, text="Laporan Gaji", font=("Arial", 18), fg="blue").place(relx=0.5, y=40, anchor="center")
 
-        tk.Label(frame, text="Nama Pegawai (Opsional):", font=("Arial", 12)).pack(pady=(10, 0))
+        # Input Nama Pegawai
+        tk.Label(frame, text="Nama Pegawai (Opsional):", font=("Arial", 12)).place(relx=0.5, y=90, anchor="center")
         name_entry = tk.Entry(frame, width=40)
-        name_entry.pack(pady=(5, 10))
+        name_entry.place(relx=0.5, y=120, anchor="center")
 
-        tk.Label(frame, text="Pilih tanggal mulai:", font=("Arial", 12)).pack(pady=(10, 0))
+        # Pilih Tanggal Mulai
+        tk.Label(frame, text="Pilih tanggal mulai:", font=("Arial", 10)).place(relx=0.5, y=180, anchor="center")
+        start_date_button = tk.Button(frame, text="Pilih Tanggal Mulai", fg="gray", command=lambda: show_start_calendar())
+        start_date_button.place(relx=0.5, y=210, anchor="center")
         start_date_calendar = Calendar(frame, date_pattern="yyyy-mm-dd")
-        start_date_calendar.pack(pady=(0, 10))
 
-        tk.Label(frame, text="Pilih tanggal akhir:", font=("Arial", 12)).pack(pady=(10, 0))
+        # Pilih Tanggal Akhir
+        tk.Label(frame, text="Pilih tanggal akhir:", font=("Arial", 10)).place(relx=0.5, y=260, anchor="center")
+        end_date_button = tk.Button(frame, text="Pilih Tanggal Akhir", fg="gray", command=lambda: show_end_calendar())
+        end_date_button.place(relx=0.5, y=290, anchor="center")
         end_date_calendar = Calendar(frame, date_pattern="yyyy-mm-dd")
-        end_date_calendar.pack(pady=(0, 10))
+
+        # Fungsi untuk menampilkan kalender dan menambahkan event pada pemilihan tanggal
+        def show_start_calendar():
+            start_date_calendar.place(relx=0.8, y=210, anchor="center")
+            start_date_calendar.bind("<<CalendarSelected>>", set_start_date)  # Event binding
+
+        def show_end_calendar():
+            end_date_calendar.place(relx=0.8, y=290, anchor="center")
+            end_date_calendar.bind("<<CalendarSelected>>", set_end_date)  # Event binding
+
+        # Fungsi untuk menyimpan tanggal yang dipilih
+        def set_start_date(event):
+            start_date = start_date_calendar.get_date()  # Mendapatkan tanggal yang dipilih
+            start_date_button.config(text=f"Mulai: {start_date}")  # Menampilkan tanggal pada tombol
+            start_date_calendar.place_forget()  # Menyembunyikan kalender setelah memilih tanggal
+            start_date_calendar.unbind("<<CalendarSelected>>")  # Unbind event agar tidak memicu lagi
+
+        def set_end_date(event):
+            end_date = end_date_calendar.get_date()  # Mendapatkan tanggal yang dipilih
+            end_date_button.config(text=f"Akhir: {end_date}")  # Menampilkan tanggal pada tombol
+            end_date_calendar.place_forget()  # Menyembunyikan kalender setelah memilih tanggal
+            end_date_calendar.unbind("<<CalendarSelected>>")  # Unbind event agar tidak memicu lagi
+
 
         def submit_laporan_gaji():
-            start_date = start_date_calendar.get_date()
-            end_date = end_date_calendar.get_date()
+            start_date = start_date_button.cget("text").replace("Mulai: ", "")
+            end_date = end_date_button.cget("text").replace("Akhir: ", "")
             name = name_entry.get().strip()
 
             try:
@@ -756,36 +836,67 @@ class AbsensiApp(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-        tk.Button(frame, text="Submit", command=submit_laporan_gaji, width=20, height=2).pack(pady=10)
-        tk.Button(frame, text="Back", command=self.show_pemilik_menu, width=20, height=2).pack(pady=10)
+        # Tombol Submit
+        tk.Button(frame, text="Submit", command=submit_laporan_gaji, width=15, height=2, background="blue", fg="white").place(relx=0.5, y=370, anchor="center")
+        
+        # Tombol Back
+        tk.Button(frame, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=450, anchor="center")
 
     def laporan_kehadiran(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("800x700")
+        self.geometry("600x500")
         
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
-        frame = scroll_frame.scrollable_frame
+        # Membuat frame utama yang diatur untuk posisi tengah
+        frame = tk.Frame(self, width=800, height=700)
+        frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(frame, text="Laporan Absensi", font=("Arial", 18)).pack(pady=(20, 20))
+        # Menambahkan Label di tengah
+        tk.Label(frame, text="Laporan Absensi", font=("Arial", 18), fg="blue").place(relx=0.5, y=40, anchor="center")
 
-        tk.Label(frame, text="Nama Pegawai (Opsional):", font=("Arial", 12)).pack(pady=(10, 0))
+        # Input Nama Pegawai
+        tk.Label(frame, text="Nama Pegawai (Opsional):", font=("Arial", 12)).place(relx=0.5, y=90, anchor="center")
         name_entry = tk.Entry(frame, width=40)
-        name_entry.pack(pady=(5, 10))
+        name_entry.place(relx=0.5, y=120, anchor="center")
 
-        tk.Label(frame, text="Pilih tanggal mulai:", font=("Arial", 12)).pack(pady=(10, 0))
+        # Pilih Tanggal Mulai
+        tk.Label(frame, text="Pilih tanggal mulai:", font=("Arial", 10)).place(relx=0.5, y=180, anchor="center")
+        start_date_button = tk.Button(frame, text="Pilih Tanggal Mulai", fg="gray", command=lambda: show_start_calendar())
+        start_date_button.place(relx=0.5, y=210, anchor="center")
         start_date_calendar = Calendar(frame, date_pattern="yyyy-mm-dd")
-        start_date_calendar.pack(pady=(0, 10))
 
-        tk.Label(frame, text="Pilih tanggal akhir:", font=("Arial", 12)).pack(pady=(10, 0))
+        # Pilih Tanggal Akhir
+        tk.Label(frame, text="Pilih tanggal akhir:", font=("Arial", 10)).place(relx=0.5, y=260, anchor="center")
+        end_date_button = tk.Button(frame, text="Pilih Tanggal Akhir", fg="gray", command=lambda: show_end_calendar())
+        end_date_button.place(relx=0.5, y=290, anchor="center")
         end_date_calendar = Calendar(frame, date_pattern="yyyy-mm-dd")
-        end_date_calendar.pack(pady=(0, 10))
 
+        # Fungsi untuk menampilkan kalender dan menambahkan event pada pemilihan tanggal
+        def show_start_calendar():
+            start_date_calendar.place(relx=0.8, y=210, anchor="center")
+            start_date_calendar.bind("<<CalendarSelected>>", set_start_date)  # Event binding
+
+        def show_end_calendar():
+            end_date_calendar.place(relx=0.8, y=290, anchor="center")
+            end_date_calendar.bind("<<CalendarSelected>>", set_end_date)  # Event binding
+
+        # Fungsi untuk menyimpan tanggal yang dipilih
+        def set_start_date(event):
+            start_date = start_date_calendar.get_date()  # Mendapatkan tanggal yang dipilih
+            start_date_button.config(text=f"Mulai: {start_date}")  # Menampilkan tanggal pada tombol
+            start_date_calendar.place_forget()  # Menyembunyikan kalender setelah memilih tanggal
+            start_date_calendar.unbind("<<CalendarSelected>>")  # Unbind event agar tidak memicu lagi
+
+        def set_end_date(event):
+            end_date = end_date_calendar.get_date()  # Mendapatkan tanggal yang dipilih
+            end_date_button.config(text=f"Akhir: {end_date}")  # Menampilkan tanggal pada tombol
+            end_date_calendar.place_forget()  # Menyembunyikan kalender setelah memilih tanggal
+            end_date_calendar.unbind("<<CalendarSelected>>")  # Unbind event agar tidak memicu lagi
+
+        # Fungsi submit untuk laporan kehadiran
         def submit_laporan_kehadiran():
-            start_date = start_date_calendar.get_date()
-            end_date = end_date_calendar.get_date()
+            start_date = start_date_button.cget("text").replace("Mulai: ", "")
+            end_date = end_date_button.cget("text").replace("Akhir: ", "")
             name = name_entry.get().strip()
 
             try:
@@ -829,7 +940,7 @@ class AbsensiApp(tk.Tk):
                         widget.destroy()
 
                 if not results:
-                    tk.Label(frame, text="Tidak ada data absensi untuk kriteria tersebut.", font=("Arial", 12)).pack(pady=10)
+                    tk.Label(frame, text="Tidak ada data absensi untuk kriteria tersebut.", font=("Arial", 12)).place(relx=0.5, y=350, anchor="center")
                     return
 
                 result_window = tk.Toplevel(self)
@@ -862,8 +973,11 @@ class AbsensiApp(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-        tk.Button(frame, text="Submit", command=submit_laporan_kehadiran, width=20, height=2).pack(pady=10)
-        tk.Button(frame, text="Back", command=self.show_pemilik_menu, width=20, height=2).pack(pady=10)
+        # Tombol Submit
+        tk.Button(frame, text="Submit", command=submit_laporan_kehadiran, width=15, height=2, background="blue", fg="white").place(relx=0.5, y=370, anchor="center")
+        
+        # Tombol Back
+        tk.Button(frame, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=450, anchor="center")
 
 if __name__ == "__main__":
     setup_database()
