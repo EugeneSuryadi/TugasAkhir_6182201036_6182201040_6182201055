@@ -44,7 +44,9 @@ CREATE TABLE Absensi (
     waktuKeluar TIME,
     tanggalAbsensi DATE DEFAULT CAST(GETDATE() AS DATE),
     Durasi TIME,
+    WeeklyHours INT DEFAULT 0,
     FOREIGN KEY (idPegawai) REFERENCES Pegawai(idPegawai)
+);
 
 -- Insert initial data into Jabatan table
 INSERT INTO Jabatan (idJabatan, namaJabatan, satuanGaji) VALUES
