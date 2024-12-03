@@ -10,8 +10,8 @@ from tkinter import Canvas, Frame, Scrollbar
 # Database connection string
 connectionString = (
     'DRIVER={ODBC Driver 17 for SQL Server};'
-    'SERVER=LAPTOP-CGSVR75B\\SQLEXPRESS;'
-    'DATABASE=DatabaseManpro;'  # Ganti dengan nama database yang benar
+    'SERVER=HP-ENVY\\SQLEXPRESS;'
+    'DATABASE=KafeIF2;'
     'Trusted_Connection=yes;'
     'TrustServerCertificate=yes;'
 )
@@ -141,7 +141,6 @@ def fetch_kecamatan_kelurahan():
     cursor.execute("SELECT idKecamatan, namaKecamatan FROM Kecamatan")
     kecamatan_data = cursor.fetchall()
     
-    # Ubah query untuk mendapatkan semua data kelurahan
     cursor.execute("""
         SELECT k.idKelurahan, k.namaKelurahan, k.idKecamatan 
         FROM Kelurahan k
@@ -155,13 +154,15 @@ def fetch_kecamatan_kelurahan():
     
     # Buat dictionary kelurahan yang dikelompokkan berdasarkan idKecamatan
     kelurahan_by_kecamatan = {}
+    kelurahan_dict = {}
     for row in kelurahan_data:
         id_kelurahan, nama_kelurahan, id_kecamatan = row
         if id_kecamatan not in kelurahan_by_kecamatan:
             kelurahan_by_kecamatan[id_kecamatan] = []
         kelurahan_by_kecamatan[id_kecamatan].append((nama_kelurahan, id_kelurahan))
+        kelurahan_dict[nama_kelurahan] = id_kelurahan
     
-    return kecamatan_dict, kelurahan_by_kecamatan
+    return kecamatan_dict, kelurahan_by_kecamatan, kelurahan_dict
 
 def fetch_jabatan():
     conn = pyodbc.connect(connectionString)
@@ -332,7 +333,7 @@ class AbsensiApp(tk.Tk):
                 messagebox.showerror("Error", str(e))
 
         # Tombol Login dan Back diatur di tengah
-        tk.Button(self, text="Login", command=submit_login, width=15, height=1, background="blue", fg="white").place(relx=0.5, rely=0.6, anchor="center")
+        tk.Button(self, text="Login", command=submit_login, width=15, height=1, background="green", fg="white").place(relx=0.5, rely=0.6, anchor="center")
         tk.Button(self, text="Back", command=self.create_main_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, rely=0.7, anchor="center")
 
         # Tombol untuk keluar dari fullscreen
@@ -424,7 +425,7 @@ class AbsensiApp(tk.Tk):
                 messagebox.showerror("Error", str(e))
 
         # Tombol Login dan Back
-        tk.Button(self, text="Login", command=submit_login, width=15, height=1, background="blue", fg="white").place(relx=0.5, rely=0.4, anchor="center")
+        tk.Button(self, text="Login", command=submit_login, width=15, height=1, background="green", fg="white").place(relx=0.5, rely=0.4, anchor="center")
         tk.Button(self, text="Back", command=self.create_main_menu, width=15, height=1, background="red", fg="white").place(relx=0.5, rely=0.5, anchor="center")
 
         # Tombol untuk keluar dari fullscreen
@@ -588,7 +589,7 @@ class AbsensiApp(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-        tk.Button(self, text="Submit", command=submit_pegawai, width=15, height=2, background="blue", fg="white").place(relx=0.5, rely=0.85, anchor="center")
+        tk.Button(self, text="Submit", command=submit_pegawai, width=15, height=2, background="green", fg="white").place(relx=0.5, rely=0.85, anchor="center")
         tk.Button(self, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, rely=0.9, anchor="center")
 
         # Tombol untuk keluar dari fullscreen
@@ -622,14 +623,8 @@ class AbsensiApp(tk.Tk):
         action_dropdown = ttk.Combobox(self, textvariable=action_var, values=["masuk", "keluar"], width=20)
         action_dropdown.place(relx=0.5, rely=0.2, anchor="center")
 
-        # Label dan entry nomor telepon di tengah
-        tk.Label(self, text="Masukkan nomor telepon untuk check-in/check-out:", font=("Arial", 12), fg="white", bg="green").place(relx=0.5, rely=0.25, anchor="center")
-        nomor_telepon_entry = tk.Entry(self, width=30)
-        nomor_telepon_entry.place(relx=0.5, rely=0.3, anchor="center")
-
         def submit_absensi():
             action = action_var.get().strip().lower()
-            nomor_telepon = nomor_telepon_entry.get().strip()
 
             if action not in ["masuk", "keluar"]:
                 messagebox.showerror("Error", "Tindakan tidak valid. Masukkan 'masuk' atau 'keluar'.")
@@ -639,12 +634,8 @@ class AbsensiApp(tk.Tk):
                 conn = pyodbc.connect(connectionString)
                 cursor = conn.cursor()
 
-                cursor.execute("SELECT idPegawai FROM Pegawai WHERE NomorTelepon = ?", (nomor_telepon,))
-                row = cursor.fetchone()
-                if row:
-                    id_pegawai = row[0]
-                else:
-                    raise ValueError("Pegawai dengan nomor telepon tersebut tidak ditemukan.")
+                # Gunakan self.id_pegawai yang sudah disimpan saat login
+                id_pegawai = self.id_pegawai
 
                 current_time = datetime.now().strftime('%H:%M:%S')
                 current_date = datetime.now().strftime('%Y-%m-%d')
@@ -741,7 +732,7 @@ class AbsensiApp(tk.Tk):
         # Create a new window for details
         details_window = tk.Toplevel(self)
         details_window.title("Detail Gaji")
-        details_window.geometry("800x600")
+        details_window.geometry("650x350")
 
         # Create a scrollable frame in the new window
         scroll_frame = ScrollableFrame(details_window)
@@ -749,7 +740,7 @@ class AbsensiApp(tk.Tk):
 
         frame = scroll_frame.scrollable_frame
 
-        tk.Label(frame, text="Detail Gaji Mingguan", font=("Arial", 16)).pack(pady=(20, 10))
+        tk.Label(frame, text="Detail Gaji Mingguan", font=("Arial", 16),fg='brown').pack(pady=(20, 10))
 
         # Fetch detailed salary data
         try:
@@ -920,14 +911,14 @@ class AbsensiApp(tk.Tk):
 
                 result_window = tk.Toplevel(self)
                 result_window.title("Laporan Gaji")
-                result_window.geometry("800x600")
+                result_window.geometry("600x300")
 
                 scroll_result = ScrollableFrame(result_window)
                 scroll_result.pack(fill=tk.BOTH, expand=True)
 
                 result_frame = scroll_result.scrollable_frame
 
-                tk.Label(result_frame, text="Laporan Gaji", font=("Arial", 16), fg="white", bg="brown").pack(pady=(10, 10))
+                tk.Label(result_frame, text="Laporan Gaji", font=("Arial", 16), fg="brown").pack(pady=(10, 10))
 
                 tree = ttk.Treeview(result_frame, columns=columns, show='headings')
                 for col in columns:
@@ -936,14 +927,20 @@ class AbsensiApp(tk.Tk):
                 tree.pack(fill=tk.BOTH, expand=True, pady=10)
 
                 for row in results:
-                    tree.insert('', tk.END, values=row)
+                    # Ensure each value is formatted correctly
+                    nama_pegawai = row.Nama_Pegawai
+                    nama_jabatan = row.Nama_Jabatan
+                    satuan_gaji = f"Rp {row.SatuanGaji:,}"  # Format currency
+                    total_jam_kerja = row.TotalJamKerja
+                    laporan_gaji = f"Rp {row.Laporan_Gaji:,}"  # Format currency
+                    tree.insert('', tk.END, values=(nama_pegawai, nama_jabatan, satuan_gaji, total_jam_kerja, laporan_gaji))
 
                 conn.close()
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
         # Tombol Submit
-        tk.Button(self, text="Submit", command=submit_laporan_gaji, width=15, height=2, background="blue", fg="white").place(relx=0.5, rely=0.55, anchor="center")
+        tk.Button(self, text="Submit", command=submit_laporan_gaji, width=15, height=2, background="green", fg="white").place(relx=0.5, rely=0.55, anchor="center")
         
         # Tombol Back
         tk.Button(self, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, rely=0.65, anchor="center")
@@ -1061,14 +1058,14 @@ class AbsensiApp(tk.Tk):
 
                 result_window = tk.Toplevel(self)
                 result_window.title("Laporan Absensi")
-                result_window.geometry("900x600")
+                result_window.geometry("850x300")
 
                 scroll_result = ScrollableFrame(result_window)
                 scroll_result.pack(fill=tk.BOTH, expand=True)
 
                 result_frame = scroll_result.scrollable_frame
 
-                tk.Label(result_frame, text="Laporan Absensi", font=("Arial", 16), fg="white").pack(pady=(10, 10))
+                tk.Label(result_frame, text="Laporan Absensi", font=("Arial", 16), fg="brown").pack(pady=(10, 10))
 
                 tree = ttk.Treeview(result_frame, columns=columns, show='headings')
                 for col in columns:
@@ -1090,14 +1087,14 @@ class AbsensiApp(tk.Tk):
                 messagebox.showerror("Error", str(e))
 
         # Tombol Submit
-        tk.Button(self, text="Submit", command=submit_laporan_kehadiran, width=15, height=2, background="blue", fg="white").place(relx=0.5, y=370, anchor="center")
+        tk.Button(self, text="Submit", command=submit_laporan_kehadiran, width=15, height=2, background="green", fg="white").place(relx=0.5, y=370, anchor="center")
 
         # Tombol Back
         tk.Button(self, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=450, anchor="center")
 
 if __name__ == "__main__":
     setup_database()
-    kecamatan_dict, kelurahan_by_kecamatan = fetch_kecamatan_kelurahan()  # Updated variable name
+    kecamatan_dict, kelurahan_by_kecamatan, kelurahan_dict = fetch_kecamatan_kelurahan()  # Update assignment
     jabatan_dict = fetch_jabatan()
     app = AbsensiApp()
     app.mainloop()
