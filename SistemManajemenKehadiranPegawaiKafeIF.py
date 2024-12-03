@@ -1,9 +1,11 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+from PIL import Image, ImageTk
 import pyodbc
 from datetime import datetime, timedelta
 from tkcalendar import Calendar
 from tkinter import Canvas, Frame, Scrollbar
+
 
 # Database connection string
 connectionString = (
@@ -139,15 +141,27 @@ def fetch_kecamatan_kelurahan():
     cursor.execute("SELECT idKecamatan, namaKecamatan FROM Kecamatan")
     kecamatan_data = cursor.fetchall()
     
-    cursor.execute("SELECT idKelurahan, namaKelurahan, idKecamatan FROM Kelurahan")
+    # Ubah query untuk mendapatkan semua data kelurahan
+    cursor.execute("""
+        SELECT k.idKelurahan, k.namaKelurahan, k.idKecamatan 
+        FROM Kelurahan k
+        ORDER BY k.idKecamatan, k.namaKelurahan
+    """)
     kelurahan_data = cursor.fetchall()
     
     conn.close()
     
     kecamatan_dict = {row[1]: row[0] for row in kecamatan_data}  # {namaKecamatan: idKecamatan}
-    kelurahan_dict = {row[1]: row[0] for row in kelurahan_data}  # {namaKelurahan: idKelurahan}
     
-    return kecamatan_dict, kelurahan_dict
+    # Buat dictionary kelurahan yang dikelompokkan berdasarkan idKecamatan
+    kelurahan_by_kecamatan = {}
+    for row in kelurahan_data:
+        id_kelurahan, nama_kelurahan, id_kecamatan = row
+        if id_kecamatan not in kelurahan_by_kecamatan:
+            kelurahan_by_kecamatan[id_kecamatan] = []
+        kelurahan_by_kecamatan[id_kecamatan].append((nama_kelurahan, id_kelurahan))
+    
+    return kecamatan_dict, kelurahan_by_kecamatan
 
 def fetch_jabatan():
     conn = pyodbc.connect(connectionString)
@@ -229,51 +243,70 @@ class AbsensiApp(tk.Tk):
         for widget in self.winfo_children():
             widget.destroy()
 
-        # Menentukan ukuran jendela tetap
-        self.geometry("430x250")
-        self.update_idletasks()  # Pastikan ukuran dihitung sebelum penempatan widget
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
 
-        # Membuat frame utama
-        frame = tk.Frame(self, width=430, height=250)
-        frame.pack(fill=tk.BOTH, expand=True)
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
 
-        # Menambahkan Label dan tombol di tengah-tengah
-        tk.Label(frame, text="Sistem Manajemen", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=50, anchor="center")
-        tk.Label(frame, text="Kehadiran Pegawai Kafe Asep Cikidiw", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=90, anchor="center")
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Menambahkan Label dan tombol di atas gambar latar belakang
+        tk.Label(self, text="Sistem Manajemen", font=("Helvetica", 20), fg="White", bg="green").place(relx=0.5, rely=0.2, anchor="center")
+        tk.Label(self, text="Kehadiran Pegawai Kafe Asep Cikidiw", font=("Helvetica", 20), fg="White", bg="green").place(relx=0.5, rely=0.3, anchor="center")
 
         # Tombol di tengah
-        tk.Button(frame, text="Pemilik", command=self.show_pemilik_login, background="black", fg="white", width=20).place(relx=0.5, y=140, anchor="center")
-        tk.Button(frame, text="Pegawai", command=self.show_pegawai_login, background="black", fg="white", width=20).place(relx=0.5, y=180, anchor="center")
+        tk.Button(self, text="Pemilik", command=self.show_pemilik_login, background="black", fg="white", width=20).place(relx=0.5, rely=0.5, anchor="center")
+        tk.Button(self, text="Pegawai", command=self.show_pegawai_login, background="black", fg="white", width=20).place(relx=0.5, rely=0.6, anchor="center")
+
+        # Tambahkan tombol untuk keluar dari fullscreen
+        tk.Button(self, text="Keluar", command=self.destroy, background="red", fg="white", width=10).place(relx=0.95, rely=0.05, anchor="ne")
 
     def show_pemilik_login(self):
         for widget in self.winfo_children():
             widget.destroy()
 
-        # Ukuran jendela 430x400
-        self.geometry("400x420")
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
 
-        # Membuat frame utama
-        frame = tk.Frame(self, width=430, height=400)
-        frame.pack(fill=tk.BOTH, expand=True)
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
 
-        # Menambahkan Label untuk judul dan menempatkannya di tengah
-        tk.Label(frame, text="Login to Continue", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=50, anchor="center")
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Menambahkan Label untuk judul di atas gambar latar belakang
+        tk.Label(self, text="Login to Continue", font=("Helvetica", 18), fg="White", bg="green").place(relx=0.5, rely=0.1, anchor="center")
 
         # Label dan Entry untuk Username
-        tk.Label(frame, text="Username:", font=("Helvetica", 12)).place(relx=0.5, y=100, anchor="center")
-        username_entry = tk.Entry(frame, width=30)
-        username_entry.place(relx=0.5, y=130, anchor="center")
+        tk.Label(self, text="Username:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.25, anchor="center")
+        username_entry = tk.Entry(self, width=30)
+        username_entry.place(relx=0.5, rely=0.3, anchor="center")
 
         # Label dan Entry untuk Email
-        tk.Label(frame, text="Email:", font=("Helvetica", 12)).place(relx=0.5, y=160, anchor="center")
-        email_entry = tk.Entry(frame, width=30)
-        email_entry.place(relx=0.5, y=190, anchor="center")
+        tk.Label(self, text="Email:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.35, anchor="center")
+        email_entry = tk.Entry(self, width=30)
+        email_entry.place(relx=0.5, rely=0.4, anchor="center")
 
         # Label dan Entry untuk Password
-        tk.Label(frame, text="Password:", font=("Helvetica", 12)).place(relx=0.5, y=220, anchor="center")
-        password_entry = tk.Entry(frame, show='*', width=30)
-        password_entry.place(relx=0.5, y=250, anchor="center")
+        tk.Label(self, text="Password:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.45, anchor="center")
+        password_entry = tk.Entry(self, show='*', width=30)
+        password_entry.place(relx=0.5, rely=0.5, anchor="center")
 
+        # Fungsi untuk menangani login
         def submit_login():
             username = username_entry.get()
             email = email_entry.get()
@@ -299,72 +332,77 @@ class AbsensiApp(tk.Tk):
                 messagebox.showerror("Error", str(e))
 
         # Tombol Login dan Back diatur di tengah
-        tk.Button(frame, text="Login", command=submit_login, width=15, height=1, background="blue", fg="white").place(relx=0.5, y=310, anchor="center")
-        tk.Button(frame, text="Back", command=self.create_main_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=380, anchor="center")
+        tk.Button(self, text="Login", command=submit_login, width=15, height=1, background="blue", fg="white").place(relx=0.5, rely=0.6, anchor="center")
+        tk.Button(self, text="Back", command=self.create_main_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, rely=0.7, anchor="center")
 
-
+        # Tombol untuk keluar dari fullscreen
+        tk.Button(self, text="Keluar", command=self.destroy, width=10, height=1, background="red", fg="white").place(relx=0.95, rely=0.05, anchor="ne")
 
     def show_pemilik_menu(self):
         for widget in self.winfo_children():
             widget.destroy()
-        
-        # Ukuran jendela tetap
-        self.geometry("350x390")
-        
-        # Membuat frame utama
-        frame = tk.Frame(self, width=400, height=420)
-        frame.pack(fill=tk.BOTH, expand=True)
 
-        # Menambahkan Label di tengah
-        tk.Label(frame, text="Hello, Owner!", font=("Helvetica", 12), fg="blue").place(relx=0.5, y=35, anchor="center")
-        tk.Label(frame, text="Select to Continue", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=60, anchor="center")
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
 
-        # Tombol Registrasi Pegawai Baru di tengah
-        tk.Button(frame, text="Registrasi Pegawai Baru", command=self.pegawai_baru, width=25, height=2, background="black", fg="white").place(relx=0.5, y=120, anchor="center")
-        
-        # Tombol Laporan Absensi di tengah
-        tk.Button(frame, text="Laporan Absensi", command=self.laporan_kehadiran, width=25, height=2, background="black", fg="white").place(relx=0.5, y=190, anchor="center")
-        
-        # Tombol Laporan Gaji di tengah
-        tk.Button(frame, text="Laporan Gaji", command=self.laporan_gaji, width=25, height=2, background="black", fg="white").place(relx=0.5, y=260, anchor="center")
-        
-        # Tombol Back di tengah
-        tk.Button(frame, text="Back", command=self.create_main_menu, width=20, height=1, background="red", fg="white").place(relx=0.5, y=330, anchor="center")
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
 
-    def show_pegawai_login(self):
-        for widget in self.winfo_children():
-            widget.destroy()
-        self.geometry("430x250")
-        
-        scroll_frame = ScrollableFrame(self)
-        scroll_frame.pack(fill=tk.BOTH, expand=True)
-        
-        frame = scroll_frame.scrollable_frame
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-        tk.Label(frame, text="Login Pegawai", font=("Arial", 18)).pack(pady=(20, 20))
+        # Menambahkan Label di atas gambar latar belakang
+        tk.Label(self, text="Hello, Owner!", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.1, anchor="center")
+        tk.Label(self, text="Select to Continue", font=("Helvetica", 18), fg="white", bg="green").place(relx=0.5, rely=0.2, anchor="center")
 
-        tk.Label(frame, text="Nomor Telepon:", font=("Arial", 12)).pack(pady=(10, 0))
-        nomor_telepon_entry = tk.Entry(frame, width=30)
-        nomor_telepon_entry.pack()
+        # Tombol Registrasi Pegawai Baru
+        tk.Button(self, text="Registrasi Pegawai Baru", command=self.pegawai_baru, width=25, height=2, background="brown", fg="white").place(relx=0.5, rely=0.3, anchor="center")
+
+        # Tombol Laporan Absensi
+        tk.Button(self, text="Laporan Absensi", command=self.laporan_kehadiran, width=25, height=2, background="brown", fg="white").place(relx=0.5, rely=0.4, anchor="center")
+
+        # Tombol Laporan Gaji
+        tk.Button(self, text="Laporan Gaji", command=self.laporan_gaji, width=25, height=2, background="brown", fg="white").place(relx=0.5, rely=0.5, anchor="center")
+
+        # Tombol Back
+        tk.Button(self, text="Back", command=self.create_main_menu, width=20, height=1, background="red", fg="white").place(relx=0.5, rely=0.6, anchor="center")
+
+        # Tombol untuk keluar dari fullscreen
+        tk.Button(self, text="Keluar", command=self.destroy, width=10, height=1, background="red", fg="white").place(relx=0.95, rely=0.05, anchor="ne")
+
 
     def show_pegawai_login(self):
         for widget in self.winfo_children():
             widget.destroy()
-        
-        # Ukuran jendela tetap
-        self.geometry("430x300")
-        
-        # Membuat frame utama
-        frame = tk.Frame(self, width=430, height=250)
-        frame.pack(fill=tk.BOTH, expand=True)
 
-        # Menambahkan Label di tengah
-        tk.Label(frame, text="Login Pegawai", font=("Arial", 18), fg="blue").place(relx=0.5, y=30, anchor="center")
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
+
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
+
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Menambahkan Label di atas gambar latar belakang
+        tk.Label(self, text="Login Pegawai", font=("Arial", 18), fg="white", bg="green").place(relx=0.5, rely=0.1, anchor="center")
 
         # Input untuk Nomor Telepon
-        tk.Label(frame, text="Nomor Telepon:", font=("Arial", 12)).place(relx=0.5, y=80, anchor="center")
-        nomor_telepon_entry = tk.Entry(frame, width=30)
-        nomor_telepon_entry.place(relx=0.5, y=110, anchor="center")
+        tk.Label(self, text="Nomor Telepon:", font=("Arial", 12), fg="white", bg="green").place(relx=0.5, rely=0.25, anchor="center")
+        nomor_telepon_entry = tk.Entry(self, width=30)
+        nomor_telepon_entry.place(relx=0.5, rely=0.3, anchor="center")
 
         # Fungsi untuk submit login
         def submit_login():
@@ -385,88 +423,118 @@ class AbsensiApp(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-        # Tombol Login di tengah
-        tk.Button(frame, text="Login", command=submit_login, width=15, height=1, background="blue", fg="white").place(relx=0.5, y=160, anchor="center")
-        
-        # Tombol Back di tengah
-        tk.Button(frame, text="Back", command=self.create_main_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=220, anchor="center")
+        # Tombol Login dan Back
+        tk.Button(self, text="Login", command=submit_login, width=15, height=1, background="blue", fg="white").place(relx=0.5, rely=0.4, anchor="center")
+        tk.Button(self, text="Back", command=self.create_main_menu, width=15, height=1, background="red", fg="white").place(relx=0.5, rely=0.5, anchor="center")
+
+        # Tombol untuk keluar dari fullscreen
+        tk.Button(self, text="Keluar", command=self.destroy, width=10, height=1, background="red", fg="white").place(relx=0.95, rely=0.05, anchor="ne")
 
 
     def show_pegawai_menu(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("350x390")
-        
-        # Membuat frame utama
-        frame = tk.Frame(self, width=400, height=420)
-        frame.pack(fill=tk.BOTH, expand=True)
 
-        tk.Label(frame, text="Select to Continue", font=("Arial", 18)).place(relx=0.5, y=40, anchor="center")
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
 
-        tk.Button(frame, text="Absensi", command=self.absensi, width=15, height=2, background="black", fg="white").place(relx=0.5, y=120, anchor="center")
-        tk.Button(frame, text="Gaji", command=self.gaji, width=15, height=2, background="black", fg="white").place(relx=0.5, y=180, anchor="center")
-        tk.Button(frame, text="Back", command=self.create_main_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=240, anchor="center")
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
+
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Menambahkan Label di atas gambar latar belakang
+        tk.Label(self, text="Select to Continue", font=("Arial", 18), fg="white", bg="green").place(relx=0.5, rely=0.1, anchor="center")
+
+        # Tombol Absensi
+        tk.Button(self, text="Absensi", command=self.absensi, width=15, height=2, background="brown", fg="white").place(relx=0.5, rely=0.2, anchor="center")
+
+        # Tombol Gaji
+        tk.Button(self, text="Gaji", command=self.gaji, width=15, height=2, background="brown", fg="white").place(relx=0.5, rely=0.3, anchor="center")
+
+        # Tombol Back
+        tk.Button(self, text="Back", command=self.create_main_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, rely=0.4, anchor="center")
+
+        # Tombol untuk keluar dari fullscreen
+        tk.Button(self, text="Keluar", command=self.destroy, width=10, height=1, background="red", fg="white").place(relx=0.95, rely=0.05, anchor="ne")
 
     def pegawai_baru(self):
         for widget in self.winfo_children():
             widget.destroy()
-        
-        # Ukuran jendela tetap
-        self.geometry("450x630")
 
-        # Membuat frame utama
-        frame = tk.Frame(self, width=400, height=600)
-        frame.pack(fill=tk.BOTH, expand=True)
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
 
-        # Menambahkan Label di tengah
-        tk.Label(frame, text="Registrasi Pegawai Baru", font=("Helvetica", 18), fg="blue").place(relx=0.5, y=20, anchor="center")
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
+
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Menambahkan Label di atas gambar latar belakang
+        tk.Label(self, text="Registrasi Pegawai Baru", font=("Helvetica", 18), fg="white", bg="green").place(relx=0.5, rely=0.05, anchor="center")
 
         # Input fields di tengah
-        tk.Label(frame, text="Nama:", font=("Helvetica", 12)).place(relx=0.5, y=60, anchor="center")
-        nama_entry = tk.Entry(frame, width=40)
-        nama_entry.place(relx=0.5, y=80, anchor="center")
+        tk.Label(self, text="Nama:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.15, anchor="center")
+        nama_entry = tk.Entry(self, width=40)
+        nama_entry.place(relx=0.5, rely=0.2, anchor="center")
 
-        tk.Label(frame, text="Nomor Telepon:", font=("Helvetica", 12)).place(relx=0.5, y=120, anchor="center")
-        nomor_telepon_entry = tk.Entry(frame, width=40)
-        nomor_telepon_entry.place(relx=0.5, y=140, anchor="center")
+        tk.Label(self, text="Nomor Telepon:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.25, anchor="center")
+        nomor_telepon_entry = tk.Entry(self, width=40)
+        nomor_telepon_entry.place(relx=0.5, rely=0.3, anchor="center")
 
-        tk.Label(frame, text="Email:", font=("Helvetica", 12)).place(relx=0.5, y=180, anchor="center")
-        email_entry = tk.Entry(frame, width=40)
-        email_entry.place(relx=0.5, y=200, anchor="center")
+        tk.Label(self, text="Email:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.35, anchor="center")
+        email_entry = tk.Entry(self, width=40)
+        email_entry.place(relx=0.5, rely=0.4, anchor="center")
 
-        tk.Label(frame, text="Alamat:", font=("Helvetica", 12)).place(relx=0.5, y=250, anchor="center")
-        alamat_entry = tk.Entry(frame, width=40)
-        alamat_entry.place(relx=0.5, y=270, anchor="center")
+        tk.Label(self, text="Alamat:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.45, anchor="center")
+        alamat_entry = tk.Entry(self, width=40)
+        alamat_entry.place(relx=0.5, rely=0.5, anchor="center")
 
         # Kecamatan Dropdown
-        tk.Label(frame, text="Kecamatan:", font=("Helvetica", 12)).place(relx=0.5, y=320, anchor="center")
+        tk.Label(self, text="Kecamatan:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.55, anchor="center")
         kecamatan_var = tk.StringVar()
-        kecamatan_dropdown = ttk.Combobox(frame, textvariable=kecamatan_var, values=list(kecamatan_dict.keys()), width=37)
-        kecamatan_dropdown.place(relx=0.5, y=340, anchor="center")
+        kecamatan_dropdown = ttk.Combobox(self, textvariable=kecamatan_var, values=list(kecamatan_dict.keys()), width=37)
+        kecamatan_dropdown.place(relx=0.5, rely=0.6, anchor="center")
 
         # Kelurahan Dropdown
-        tk.Label(frame, text="Kelurahan:", font=("Helvetica", 12)).place(relx=0.5, y=390, anchor="center")
+        tk.Label(self, text="Kelurahan:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.65, anchor="center")
         kelurahan_var = tk.StringVar()
-        kelurahan_dropdown = ttk.Combobox(frame, textvariable=kelurahan_var, values=[], width=37)
-        kelurahan_dropdown.place(relx=0.5, y=410, anchor="center")
+        kelurahan_dropdown = ttk.Combobox(self, textvariable=kelurahan_var, values=[], width=37)
+        kelurahan_dropdown.place(relx=0.5, rely=0.7, anchor="center")
 
         # Update kelurahan based on kecamatan selection
         def update_kelurahan(*args):
             selected_kecamatan = kecamatan_var.get()
             selected_kecamatan_id = kecamatan_dict.get(selected_kecamatan)
+            
             if selected_kecamatan_id:
-                kelurahan_list = [k for k, v in kelurahan_dict.items() if v == selected_kecamatan_id]
+                # Dapatkan daftar kelurahan untuk kecamatan yang dipilih
+                kelurahan_list = [k[0] for k in kelurahan_by_kecamatan.get(selected_kecamatan_id, [])]
                 kelurahan_dropdown['values'] = kelurahan_list
-                kelurahan_var.set('')
-        
+                kelurahan_var.set('')  # Reset pilihan kelurahan
+
+        # Bind kecamatan_var dengan fungsi update_kelurahan
         kecamatan_var.trace('w', update_kelurahan)
 
-
         # Jabatan Dropdown
-        tk.Label(frame, text="Nama Jabatan:", font=("Helvetica", 12)).place(relx=0.5, y=460, anchor="center")
+        tk.Label(self, text="Nama Jabatan:", font=("Helvetica", 12), fg="white", bg="green").place(relx=0.5, rely=0.75, anchor="center")
         jabatan_var = tk.StringVar()
-        jabatan_dropdown = ttk.Combobox(frame, textvariable=jabatan_var, values=list(jabatan_dict.keys()), width=37)
-        jabatan_dropdown.place(relx=0.5, y=480, anchor="center")
+        jabatan_dropdown = ttk.Combobox(self, textvariable=jabatan_var, values=list(jabatan_dict.keys()), width=37)
+        jabatan_dropdown.place(relx=0.5, rely=0.8, anchor="center")
 
         # Tombol Submit dan Back
         def submit_pegawai():
@@ -520,31 +588,44 @@ class AbsensiApp(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-        tk.Button(frame, text="Submit", command=submit_pegawai, width=15, height=2, background="blue", fg="white").place(relx=0.5, y=540, anchor="center")
-        tk.Button(frame, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=580, anchor="center")
+        tk.Button(self, text="Submit", command=submit_pegawai, width=15, height=2, background="blue", fg="white").place(relx=0.5, rely=0.85, anchor="center")
+        tk.Button(self, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, rely=0.9, anchor="center")
+
+        # Tombol untuk keluar dari fullscreen
+        tk.Button(self, text="Keluar", command=self.destroy, width=10, height=1, background="red", fg="white").place(relx=0.95, rely=0.05, anchor="ne")
 
     def absensi(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("500x400")
-        
-        # Membuat frame utama
-        frame = tk.Frame(self, width=430, height=250)
-        frame.pack(fill=tk.BOTH, expand=True)
 
-        # Label di tengah
-        tk.Label(frame, text="Absensi", font=("Arial", 18)).place(relx=0.5, y=40, anchor="center")
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
+
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
+
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Menambahkan Label di atas gambar latar belakang
+        tk.Label(self, text="Absensi", font=("Arial", 18), fg="white", bg="green").place(relx=0.5, rely=0.05, anchor="center")
 
         # Label dan dropdown di tengah
-        tk.Label(frame, text="Apakah ini waktu masuk atau keluar? (masuk/keluar):", font=("Arial", 12)).place(relx=0.5, y=100, anchor="center")
+        tk.Label(self, text="Apakah ini waktu masuk atau keluar? (masuk/keluar):", font=("Arial", 12), fg="white", bg="green").place(relx=0.5, rely=0.15, anchor="center")
         action_var = tk.StringVar()
-        action_dropdown = ttk.Combobox(frame, textvariable=action_var, values=["masuk", "keluar"], width=20)
-        action_dropdown.place(relx=0.5, y=130, anchor="center")
+        action_dropdown = ttk.Combobox(self, textvariable=action_var, values=["masuk", "keluar"], width=20)
+        action_dropdown.place(relx=0.5, rely=0.2, anchor="center")
 
         # Label dan entry nomor telepon di tengah
-        tk.Label(frame, text="Masukkan nomor telepon untuk check-in/check-out:", font=("Arial", 12)).place(relx=0.5, y=170, anchor="center")
-        nomor_telepon_entry = tk.Entry(frame, width=30)
-        nomor_telepon_entry.place(relx=0.5, y=200, anchor="center")
+        tk.Label(self, text="Masukkan nomor telepon untuk check-in/check-out:", font=("Arial", 12), fg="white", bg="green").place(relx=0.5, rely=0.25, anchor="center")
+        nomor_telepon_entry = tk.Entry(self, width=30)
+        nomor_telepon_entry.place(relx=0.5, rely=0.3, anchor="center")
 
         def submit_absensi():
             action = action_var.get().strip().lower()
@@ -612,32 +693,48 @@ class AbsensiApp(tk.Tk):
                 messagebox.showerror("Error", str(e))
 
         # Tombol Submit dan Back di tengah
-        tk.Button(frame, text="Submit", command=submit_absensi, width=15, height=2, background="black", fg="white").place(relx=0.5, y=270, anchor="center")
-        tk.Button(frame, text="Back", command=self.show_pegawai_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=320, anchor="center")
+        tk.Button(self, text="Submit", command=submit_absensi, width=15, height=2, background="black", fg="white").place(relx=0.5, rely=0.35, anchor="center")
+        tk.Button(self, text="Back", command=self.show_pegawai_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, rely=0.4, anchor="center")
+
+        # Tombol untuk keluar dari fullscreen
+        tk.Button(self, text="Keluar", command=self.destroy, width=10, height=1, background="red", fg="white").place(relx=0.95, rely=0.05, anchor="ne")
 
 
     def gaji(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("500x400")
-        
-        frame = tk.Frame(self, width=430, height=250)
-        frame.pack(fill=tk.BOTH, expand=True)
 
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
 
-        # Label di tengah
-        tk.Label(frame, text="Gaji Mingguan", font=("Arial", 18)).place(relx=0.5, y=40, anchor="center")
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
+
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Menambahkan Label di atas gambar latar belakang
+        tk.Label(self, text="Gaji Mingguan", font=("Arial", 18), fg="white", bg="brown").place(relx=0.5, rely=0.05, anchor="center")
 
         try:
             weekly_hours, weekly_gaji = fetch_weekly_hours_and_gaji(self.id_pegawai)
-            tk.Label(frame, text=f"Total Jam Kerja: {weekly_hours} jam", font=("Arial", 12)).place(relx=0.5, y=120, anchor="center")
-            tk.Label(frame, text=f"Total Gaji: Rp {weekly_gaji}", font=("Arial", 12)).place(relx=0.5, y=160, anchor="center")
+            tk.Label(self, text=f"Total Jam Kerja: {weekly_hours} jam", font=("Arial", 12), fg="white", bg="green").place(relx=0.5, rely=0.2, anchor="center")
+            tk.Label(self, text=f"Total Gaji: Rp {weekly_gaji}", font=("Arial", 12), fg="white", bg="green").place(relx=0.5, rely=0.3, anchor="center")
         except Exception as e:
             messagebox.showerror("Error", str(e))
 
         # Tombol Details dan Back di tengah
-        tk.Button(frame, text="Details", command=self.gaji_details, width=20, height=2,background="black", fg="white").place(relx=0.5, y=220, anchor="center")
-        tk.Button(frame, text="Back", command=self.show_pegawai_menu, width=10, height=1,background="red", fg="white").place(relx=0.5, y=280, anchor="center")
+        tk.Button(self, text="Details", command=self.gaji_details, width=20, height=2, background="black", fg="white").place(relx=0.5, rely=0.4, anchor="center")
+        tk.Button(self, text="Back", command=self.show_pegawai_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, rely=0.5, anchor="center")
+
+        # Tombol untuk keluar dari fullscreen
+        tk.Button(self, text="Keluar", command=self.destroy, width=10, height=1, background="red", fg="white").place(relx=0.95, rely=0.05, anchor="ne")
 
 
     def gaji_details(self):
@@ -719,39 +816,49 @@ class AbsensiApp(tk.Tk):
     def laporan_gaji(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("600x500")
-        
-        # Membuat frame utama yang diatur untuk posisi tengah
-        frame = tk.Frame(self, width=800, height=700)
-        frame.pack(fill=tk.BOTH, expand=True)
 
-        # Menambahkan Label di tengah
-        tk.Label(frame, text="Laporan Gaji", font=("Arial", 18), fg="blue").place(relx=0.5, y=40, anchor="center")
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
+
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
+
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Menambahkan Label di atas gambar latar belakang
+        tk.Label(self, text="Laporan Gaji", font=("Arial", 18), fg="white", bg="green").place(relx=0.5, rely=0.05, anchor="center")
 
         # Input Nama Pegawai
-        tk.Label(frame, text="Nama Pegawai (Opsional):", font=("Arial", 12)).place(relx=0.5, y=90, anchor="center")
-        name_entry = tk.Entry(frame, width=40)
-        name_entry.place(relx=0.5, y=120, anchor="center")
+        tk.Label(self, text="Nama Pegawai (Opsional):", font=("Arial", 12), fg="white", bg="green").place(relx=0.5, rely=0.12, anchor="center")
+        name_entry = tk.Entry(self, width=40)
+        name_entry.place(relx=0.5, rely=0.18, anchor="center")
 
         # Pilih Tanggal Mulai
-        tk.Label(frame, text="Pilih tanggal mulai:", font=("Arial", 10)).place(relx=0.5, y=180, anchor="center")
-        start_date_button = tk.Button(frame, text="Pilih Tanggal Mulai", fg="gray", command=lambda: show_start_calendar())
-        start_date_button.place(relx=0.5, y=210, anchor="center")
-        start_date_calendar = Calendar(frame, date_pattern="yyyy-mm-dd")
+        tk.Label(self, text="Pilih tanggal mulai:", font=("Arial", 10), fg="white", bg="green").place(relx=0.5, rely=0.25, anchor="center")
+        start_date_button = tk.Button(self, text="Pilih Tanggal Mulai", fg="gray", command=lambda: show_start_calendar())
+        start_date_button.place(relx=0.5, rely=0.3, anchor="center")
+        start_date_calendar = Calendar(self, date_pattern="yyyy-mm-dd")
 
         # Pilih Tanggal Akhir
-        tk.Label(frame, text="Pilih tanggal akhir:", font=("Arial", 10)).place(relx=0.5, y=260, anchor="center")
-        end_date_button = tk.Button(frame, text="Pilih Tanggal Akhir", fg="gray", command=lambda: show_end_calendar())
-        end_date_button.place(relx=0.5, y=290, anchor="center")
-        end_date_calendar = Calendar(frame, date_pattern="yyyy-mm-dd")
+        tk.Label(self, text="Pilih tanggal akhir:", font=("Arial", 10), fg="white", bg="green").place(relx=0.5, rely=0.35, anchor="center")
+        end_date_button = tk.Button(self, text="Pilih Tanggal Akhir", fg="gray", command=lambda: show_end_calendar())
+        end_date_button.place(relx=0.5, rely=0.4, anchor="center")
+        end_date_calendar = Calendar(self, date_pattern="yyyy-mm-dd")
 
         # Fungsi untuk menampilkan kalender dan menambahkan event pada pemilihan tanggal
         def show_start_calendar():
-            start_date_calendar.place(relx=0.8, y=210, anchor="center")
+            start_date_calendar.place(relx=0.65, rely=0.4, anchor="center")
             start_date_calendar.bind("<<CalendarSelected>>", set_start_date)  # Event binding
 
         def show_end_calendar():
-            end_date_calendar.place(relx=0.8, y=290, anchor="center")
+            end_date_calendar.place(relx=0.65, rely=0.5, anchor="center")
             end_date_calendar.bind("<<CalendarSelected>>", set_end_date)  # Event binding
 
         # Fungsi untuk menyimpan tanggal yang dipilih
@@ -766,7 +873,6 @@ class AbsensiApp(tk.Tk):
             end_date_button.config(text=f"Akhir: {end_date}")  # Menampilkan tanggal pada tombol
             end_date_calendar.place_forget()  # Menyembunyikan kalender setelah memilih tanggal
             end_date_calendar.unbind("<<CalendarSelected>>")  # Unbind event agar tidak memicu lagi
-
 
         def submit_laporan_gaji():
             start_date = start_date_button.cget("text").replace("Mulai: ", "")
@@ -804,12 +910,12 @@ class AbsensiApp(tk.Tk):
                 results = cursor.fetchall()
 
                 # Clear previous Treeview if exists
-                for widget in frame.winfo_children():
+                for widget in self.winfo_children():
                     if isinstance(widget, ttk.Treeview):
                         widget.destroy()
 
                 if not results:
-                    tk.Label(frame, text="Tidak ada data gaji untuk kriteria tersebut.", font=("Arial", 12)).pack(pady=10)
+                    tk.Label(self, text="Tidak ada data gaji untuk kriteria tersebut.", font=("Arial", 12), fg="white", bg="brown").pack(pady=10)
                     return
 
                 result_window = tk.Toplevel(self)
@@ -821,7 +927,7 @@ class AbsensiApp(tk.Tk):
 
                 result_frame = scroll_result.scrollable_frame
 
-                tk.Label(result_frame, text="Laporan Gaji", font=("Arial", 16)).pack(pady=(10, 10))
+                tk.Label(result_frame, text="Laporan Gaji", font=("Arial", 16), fg="white", bg="brown").pack(pady=(10, 10))
 
                 tree = ttk.Treeview(result_frame, columns=columns, show='headings')
                 for col in columns:
@@ -837,47 +943,57 @@ class AbsensiApp(tk.Tk):
                 messagebox.showerror("Error", str(e))
 
         # Tombol Submit
-        tk.Button(frame, text="Submit", command=submit_laporan_gaji, width=15, height=2, background="blue", fg="white").place(relx=0.5, y=370, anchor="center")
+        tk.Button(self, text="Submit", command=submit_laporan_gaji, width=15, height=2, background="blue", fg="white").place(relx=0.5, rely=0.55, anchor="center")
         
         # Tombol Back
-        tk.Button(frame, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=450, anchor="center")
+        tk.Button(self, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, rely=0.65, anchor="center")
 
     def laporan_kehadiran(self):
         for widget in self.winfo_children():
             widget.destroy()
-        self.geometry("600x500")
-        
-        # Membuat frame utama yang diatur untuk posisi tengah
-        frame = tk.Frame(self, width=800, height=700)
-        frame.pack(fill=tk.BOTH, expand=True)
+
+        # Menentukan jendela menjadi full screen
+        self.attributes('-fullscreen', True)
+
+        # Membuka gambar latar belakang
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        bg_image = Image.open("t.jpg")
+        bg_image = bg_image.resize((screen_width, screen_height), Image.Resampling.LANCZOS)  # Sesuaikan dengan ukuran layar
+        bg_photo = ImageTk.PhotoImage(bg_image)
+
+        # Membuat Label dengan gambar sebagai latar belakang
+        bg_label = tk.Label(self, image=bg_photo)
+        bg_label.image = bg_photo  # Simpan referensi agar gambar tidak dihapus oleh garbage collector
+        bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
         # Menambahkan Label di tengah
-        tk.Label(frame, text="Laporan Absensi", font=("Arial", 18), fg="blue").place(relx=0.5, y=40, anchor="center")
+        tk.Label(self, text="Laporan Absensi", font=("Arial", 18), fg="white", bg="green").place(relx=0.5, y=40, anchor="center")
 
         # Input Nama Pegawai
-        tk.Label(frame, text="Nama Pegawai (Opsional):", font=("Arial", 12)).place(relx=0.5, y=90, anchor="center")
-        name_entry = tk.Entry(frame, width=40)
+        tk.Label(self, text="Nama Pegawai (Opsional):", font=("Arial", 12), fg="white", bg="green").place(relx=0.5, y=90, anchor="center")
+        name_entry = tk.Entry(self, width=40)
         name_entry.place(relx=0.5, y=120, anchor="center")
 
         # Pilih Tanggal Mulai
-        tk.Label(frame, text="Pilih tanggal mulai:", font=("Arial", 10)).place(relx=0.5, y=180, anchor="center")
-        start_date_button = tk.Button(frame, text="Pilih Tanggal Mulai", fg="gray", command=lambda: show_start_calendar())
+        tk.Label(self, text="Pilih tanggal mulai:", font=("Arial", 10), fg="white", bg="green").place(relx=0.5, y=180, anchor="center")
+        start_date_button = tk.Button(self, text="Pilih Tanggal Mulai", fg="gray", command=lambda: show_start_calendar())
         start_date_button.place(relx=0.5, y=210, anchor="center")
-        start_date_calendar = Calendar(frame, date_pattern="yyyy-mm-dd")
+        start_date_calendar = Calendar(self, date_pattern="yyyy-mm-dd")
 
         # Pilih Tanggal Akhir
-        tk.Label(frame, text="Pilih tanggal akhir:", font=("Arial", 10)).place(relx=0.5, y=260, anchor="center")
-        end_date_button = tk.Button(frame, text="Pilih Tanggal Akhir", fg="gray", command=lambda: show_end_calendar())
+        tk.Label(self, text="Pilih tanggal akhir:", font=("Arial", 10), fg="white", bg="green").place(relx=0.5, y=260, anchor="center")
+        end_date_button = tk.Button(self, text="Pilih Tanggal Akhir", fg="gray", command=lambda: show_end_calendar())
         end_date_button.place(relx=0.5, y=290, anchor="center")
-        end_date_calendar = Calendar(frame, date_pattern="yyyy-mm-dd")
+        end_date_calendar = Calendar(self, date_pattern="yyyy-mm-dd")
 
         # Fungsi untuk menampilkan kalender dan menambahkan event pada pemilihan tanggal
         def show_start_calendar():
-            start_date_calendar.place(relx=0.8, y=210, anchor="center")
+            start_date_calendar.place(relx=0.65,rely=0.4, anchor="center")
             start_date_calendar.bind("<<CalendarSelected>>", set_start_date)  # Event binding
 
         def show_end_calendar():
-            end_date_calendar.place(relx=0.8, y=290, anchor="center")
+            end_date_calendar.place(relx=0.65, rely=0.4, anchor="center")
             end_date_calendar.bind("<<CalendarSelected>>", set_end_date)  # Event binding
 
         # Fungsi untuk menyimpan tanggal yang dipilih
@@ -935,12 +1051,12 @@ class AbsensiApp(tk.Tk):
                 results = cursor.fetchall()
 
                 # Clear previous Treeview if exists
-                for widget in frame.winfo_children():
+                for widget in self.winfo_children():
                     if isinstance(widget, ttk.Treeview):
                         widget.destroy()
 
                 if not results:
-                    tk.Label(frame, text="Tidak ada data absensi untuk kriteria tersebut.", font=("Arial", 12)).place(relx=0.5, y=350, anchor="center")
+                    tk.Label(self, text="Tidak ada data absensi untuk kriteria tersebut.", font=("Arial", 12), fg="white", bg="brown").place(relx=0.5, y=350, anchor="center")
                     return
 
                 result_window = tk.Toplevel(self)
@@ -952,7 +1068,7 @@ class AbsensiApp(tk.Tk):
 
                 result_frame = scroll_result.scrollable_frame
 
-                tk.Label(result_frame, text="Laporan Absensi", font=("Arial", 16)).pack(pady=(10, 10))
+                tk.Label(result_frame, text="Laporan Absensi", font=("Arial", 16), fg="white").pack(pady=(10, 10))
 
                 tree = ttk.Treeview(result_frame, columns=columns, show='headings')
                 for col in columns:
@@ -974,14 +1090,14 @@ class AbsensiApp(tk.Tk):
                 messagebox.showerror("Error", str(e))
 
         # Tombol Submit
-        tk.Button(frame, text="Submit", command=submit_laporan_kehadiran, width=15, height=2, background="blue", fg="white").place(relx=0.5, y=370, anchor="center")
-        
+        tk.Button(self, text="Submit", command=submit_laporan_kehadiran, width=15, height=2, background="blue", fg="white").place(relx=0.5, y=370, anchor="center")
+
         # Tombol Back
-        tk.Button(frame, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=450, anchor="center")
+        tk.Button(self, text="Back", command=self.show_pemilik_menu, width=10, height=1, background="red", fg="white").place(relx=0.5, y=450, anchor="center")
 
 if __name__ == "__main__":
     setup_database()
-    kecamatan_dict, kelurahan_dict = fetch_kecamatan_kelurahan()  # Fetch data after setup
-    jabatan_dict = fetch_jabatan()  # Fetch jabatan data
+    kecamatan_dict, kelurahan_by_kecamatan = fetch_kecamatan_kelurahan()  # Updated variable name
+    jabatan_dict = fetch_jabatan()
     app = AbsensiApp()
     app.mainloop()
